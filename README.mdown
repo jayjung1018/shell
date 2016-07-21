@@ -1,0 +1,37 @@
+# Unix Shell
+My first big project using C. A Unix command line interpreter using OS concepts such as fork, wait, and exec. Uses all linux commands such as ls, cd, mv, grep, etc..  
+
+Features:   
+I/O redirection using ">" and "<"  
+Pipelining using "|" on two commands  
+backgrounding a process using "&" with the command  
+running a process in the background using "bg"
+foregrounding the most recent process using "fg"  
+
+##Compilation    
+Type "make" with all of the source files in the folder using a C compiler (clang) and type _my-sh_ to run.
+
+
+##Description (how it works)
+Mainly, the code will start at my-sh and wait for user input - once it is given, the tokenizer will parse the input and put each token into appropriate places - 
+the two parts of the pipe and the in/out filenames. It also takes note of whether there is an ampersand, a pipe, or if the command was fg or bg. 
+Then, it passes all of this information into the execute function.
+
+The execute function handles the basic forking/exec-ing. It also takes into consideration all of the extra details like I/O, pipe, and background. 
+It will then wait for the current foreground process passed in (if there was one), and then wait for any background processes to harvest before exiting.
+
+In the case of I/O, it will open/dup2 the appropriate files
+
+In the case of pipe, it will fork a second child process for the right side of the pipe along with any I/O that needs to be done
+
+In the case of an ampersand, it will bypass the foreground waiting and simply add the process to the list to keep track of.
+
+In the case of bg - it will scan the list of background processes for the first one stopped. 
+Because it is a stack, the first one that it comes across is the one that was most recently stopped and inserted into the list. 
+It then gives that process SIGCONT
+
+In the case of fg - it will also scan the list for the first bg process stopped - 
+if there isn't one, it will just take the first process on the list since it is the most recent job. 
+Whichever of the two happens, it will pass on the signal, give it terminal control, and then wait for that job to finish. 
+
+
